@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript">
+		</script>
+	</head>
+	<body style="position:absolute; width: 90%; height: 90%;">
+		<script type="text/javascript">
+			// Функция ymaps.ready() будет вызвана, когда
+			// загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+			var myMap;
+			//коэфициент размера точки для визуализации(можно баловаться)
+			var k = 2;
+			ymaps.ready(init);
+			function init(){ 
+				
+				// Создание карты.    
+				myMap = new ymaps.Map("map", {
+					// Координаты центра карты.
+					// Порядок по умолчнию: «широта, долгота».
+					// Чтобы не определять координаты центра карты вручную,
+					// воспользуйтесь инструментом Определение координат.
+					center: [55.76, 37.64],
+					// Уровень масштабирования. Допустимые значения:
+					// от 0 (весь мир) до 19.
+					zoom: 7
+				});
+				
+				
+				myMap.controls.remove('zoomControl');
+				myMap.controls.remove('rulerControl');
+				myMap.controls.remove('fullscreenControl');
+				myMap.controls.remove('typeSelector');
+				myMap.controls.remove('geolocationControl');
+				myMap.controls.remove('trafficControl');
+				myMap.controls.remove('searchControl');
+				
+				
+				/*var myCircle = new ymaps.Circle(
+						[[53.536, 49.346],10000],
+						{},
+						{
+								fillColor: "#ff000055"
+						}		
+				);
+				myMap.geoObjects.add(myCircle);*/
+				
+				
+				
+		
+			
+			
+			
+			}
+			
+			function start()
+			{
+				myMap.geoObjects.removeAll();
+				if(IsJsonString(document.getElementById("text").value)==true)
+				{
+				
+					js = JSON.parse(document.getElementById("text").value);
+					alert(js.length);
+					var colors = [];
+					for( i = 0 ; i < js.length; i++) 
+					{
+						if(js[i]["weight"]==null)
+							js[i]["weight"] = 1000;
+							
+							
+							
+						r=Math.random();
+						//alert(colors[js[i]["cluster"]]);
+						if(colors[js[i]["cluster"]]==null)
+						{
+							color = "#"+decimalToHex(Math.round((js[i]["cluster"]*20+120+r*2550))%255,2)+
+							decimalToHex(Math.round((js[i]["cluster"]*40+90+r*5000))%255,2)+decimalToHex(Math.round((js[i]["cluster"]*10+100+r*4555))%255,2)+"aa";
+							colors[js[i]["cluster"]] = color;
+						}
+						else
+						{	
+						color = colors[js[i]["cluster"]];
+						}
+						
+						
+						
+						
+						if(js[i]["type"]=="square")
+						{
+							var circle = new ymaps.Circle([[js[i]["latitude"], js[i]["longitude"]], js[i]["weight"] * k], {}, {
+		
+								stroke:false,
+								fillColor: "#00000000"
+							});
+							circle.options.visible = false;
+							// Добавляем круг на карту.
+							myMap.geoObjects.add(circle);
+
+							// Создаем прямоугольник на основе границы круга.
+							var rectangle = new ymaps.Rectangle(circle.geometry.getBounds(), {}, {
+								
+								coordRendering: "boundsPath",
+								strokeWidth: 0,
+								fillColor: color
+							});
+							// Добавляем прямоугольник на карту.
+							myMap.geoObjects.add(rectangle);
+						}	
+							
+						if(js[i]["type"]=="circle")
+						{	
+							var myCircle = new ymaps.Circle(
+									[[js[i]["latitude"], js[i]["longitude"]], js[i]["weight"] * k],
+									{},
+									{
+											strokeWidth: 0,
+											fillColor: color
+									}		
+							);
+							
+								
+							myMap.geoObjects.add(myCircle);
+						}	
+						
+						if( /(polygon)[0-9]+/.test(js[i]["type"]))
+						{
+							//alert(123);
+							n =js[i]["type"].substr("polygon".length);	
+							//alert(n);
+							var coords = [];
+							for( i1 = 0; i1 < n ; i1++ )
+							{
+								azimuth = i1*2*Math.PI / n;            
+								direction = [Math.cos(azimuth), Math.sin(azimuth)];    
+								coord = ymaps.coordSystem.geo.solveDirectProblem([js[i]["latitude"], js[i]["longitude"]],direction,js[i]["weight"] * k).endPoint;
+								//alert(coord);
+								coords.push(coord);
+								 
+							}
+        
+							var myPolygon = new ymaps.Polygon([coords, [] ], {}, {
+									fillColor: color,
+									strokeWidth: 0
+								});
+
+
+							myMap.geoObjects.add(myPolygon);
+						}
+					}
+					
+					
+				}
+				else
+				{
+					alert("Введите корректный json в текстовое поле")
+				}
+			
+			}
+			
+			function decimalToHex(d, padding) {
+				var hex = Number(d).toString(16);
+				padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+
+				while (hex.length < padding) {
+					hex = "0" + hex;
+				}
+
+				return hex;
+			}
+			
+			function IsJsonString(str) {
+				try {
+					JSON.parse(str);
+				} catch (e) {
+					return false;
+				}
+				return true;
+			}
+			
+			
+			
+			
+		</script>
+	
+	
+	<div id="map" style="width: 100%; height: 100%;"></div>
+	
+	<div>
+	
+		<div>
+			<h3>Добавьте json код для визуализации по образцу и нажмите на кнопку(атрибут веса - опционален)</h3>
+			<code>
+				
+					[<br>
+						{<br>
+							"latitude": "54.271500000000003",<br>
+							"longitude": "56.525500000000001",<br>
+							"weight": "1010",<br>
+							"cluster": "1",<br>
+							"type": "square"<br>
+						},<br>
+						{<br>
+							"latitude": "55.038899999999998",<br>
+							"longitude": "56.002200000000002",<br>
+							"weight": "580",<br>
+							"cluster": "2",<br>
+							"type": "circle"<br>
+						},<br>
+						{<br>
+							"latitude": "53.038899999999998",<br>
+							"longitude": "56.002200000000002",<br>
+							"weight": "580",<br>
+							"cluster": "2",<br>
+							"type": "polygon3"<br>
+						}<br>
+					]<br>
+				
+			</code>
+		</div>
+		<textarea id = "text" style="width:100%; height:300px; margin:20px;margin-left:5px;"></textarea>
+		<button id="start" style = "margin:20px; margin-left:5px;" onclick="start();">Визуализировать!</button>
+	</div>
+	
+	
+	</body>
+</html>
