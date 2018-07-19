@@ -8,3 +8,6 @@ The visualizer of geographical points on the map. In order to visualize your poi
 Russian
 
 Визуализатор географических точек на карте. Для того чтобы визуализировать ваши точки, добавьте информацию о них в текстовое поле в виде json массива и нажмите на кнопку. Типы фигур доступных для визуализации: circle-круг, square-квадрат, polygonN-правильный многоугольник где N число углов. Параметр weight опционален
+
+
+![alt text](https://github.com/GurSergey/YandexMapsVisualizer/blob/master/1.PNG) 
